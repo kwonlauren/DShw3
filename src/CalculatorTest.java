@@ -26,7 +26,7 @@ public class CalculatorTest {
 
     }
 
-    private static void command(String input) throws Exception{
+    public static void command(String input) throws Exception{
         try{
             input = isValid(input);
             String postfix = infix_to_postfix(input);
@@ -81,35 +81,6 @@ public class CalculatorTest {
                 }
                 result = result + ch;
             }else throw new Exception();//숫자, 연산자, 공백 외 다른 문자
-
-            /*
-            else if(isOperator(ch)){
-                if(op_prev){
-                    if(ch=='-') ch='~'; //unary -
-                    else if(ch != '(') throw new Exception(); //연산자 두번 연속 나오므로 잘못된 입력
-                }
-                if(ch=='('){
-                    if(!op_prev) throw new Exception();
-                    stk.push(ch);
-                }
-                else if(ch==')'){
-                    if(stk.isEmpty()) throw new Exception();//(가 없는데 )가 나왔으므로
-                    else stk.pop();
-                    op_prev = false;
-                    num_prev = false;
-                    num_blank_prev = false;
-                }
-                op_prev = true;
-                if(ch==')') op_prev = false;
-                num_prev = false;
-                num_blank_prev = false;
-                result = result + ch;
-            }else if(ch==' '|| ch=='\t'){
-                if(num_prev) num_blank_prev = true;
-            }
-            */
-
-
         }
         if (!stk.isEmpty()) throw new Exception();//stk에 (가 남아있으면
 
