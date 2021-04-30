@@ -24,7 +24,7 @@ public class CalculatorTest {
     }
 
     private static void command(String input) {
-    //test
+    //testt
     }
 
     private static String infix_to_postfix(String infix) {
