@@ -3,14 +3,6 @@ import java.io.*;
 
 public class CalculatorTest {
     public static void main(String args[]) {
-        /*
-        try{
-            String in = "((-2+3)*7  )+  8";
-            System.out.println(isValid(in));
-        } catch (Exception e){
-            System.out.println("ERROR");
-        }
-       */
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
