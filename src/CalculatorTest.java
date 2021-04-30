@@ -3,7 +3,7 @@ import java.util.Stack;
 
 public class CalculatorTest {
     public static void main(String args[]) {
-        String in = "2^2^3";
+        String in = "~10*~5+7";
         System.out.println(infix_to_postfix(in));
         /*
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -27,7 +27,8 @@ public class CalculatorTest {
 
     }
 
-    private static String infix_to_postfix(String infix) {//올바른 입력만 들어온다고 가
+    private static String infix_to_postfix(String infix) {
+        //올바른 입력만 들어온다고 가정, unary-는 ~로 변환되어서 들어옴.
 
         Stack<Character> stk = new Stack<>();
         long num = 0;
@@ -58,7 +59,7 @@ public class CalculatorTest {
                 }
                 stk.pop(); //pop (
             }else if (isOperator(ch)) {
-                if(ch=='^'){
+                if(ch=='^' || ch == '~') {
                     stk.push(ch);
                 }
                 else{
@@ -73,18 +74,19 @@ public class CalculatorTest {
         while(!stk.isEmpty()){
             postfix = postfix.concat(String.valueOf(stk.pop())+" ");
         }
-        return postfix.trim();//마지막의 공백 하나 제거해주
+        return postfix.strip();//마지막의 공백 하나 제거해주기
     }
 
         private static int preced(char ch){
             if (ch == '+' || ch == '-') return 1;
             else if (ch == '*' || ch == '/') return 2;
-            else if (ch == '^') return 3;
+            else if (ch == '~') return 3;
+            else if (ch == '^') return 4;
             else return 0;
         }
 
         private static boolean isOperator( char ch){
-            return ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
+            return ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
         }
 
 }
