@@ -18,7 +18,6 @@ public class CalculatorTest {
                 String input = br.readLine();
                 if (input.compareTo("q") == 0)
                     break;
-
                 command(input);
             } catch (Exception e) {
                 System.out.println("입력이 잘못되었습니다. 오류 : " + e.toString());
@@ -31,9 +30,10 @@ public class CalculatorTest {
         try{
             input = isValid(input);
             String postfix = infix_to_postfix(input);
-            System.out.println(postfix);
             long result = postfixEval(postfix);
+            System.out.println(postfix);
             System.out.println(result);
+
         } catch(Exception e){
             System.out.println("ERROR");
         }
@@ -43,33 +43,72 @@ public class CalculatorTest {
         //valid하지 않으면 Exception, valid하면 공백제거, ~로 바꾼 결과 리턴.
         String result = "";
         boolean op_prev = true;
-        boolean num_prev = false;
+        boolean num_prev = false;//직전 자리가 숫자였는지
+        boolean num_blank_prev = false;//숫자 공백이 나온 경우 --> 다음에 숫자 나오면 에러
         Stack<Character> stk = new Stack<Character>();
         for(int i=0; i<infix.length(); i++){
             char ch = infix.charAt(i);
             if(Character.isDigit(ch)) {
-                if(num_prev) throw new Exception();
+                if(num_blank_prev) throw new Exception();
                 else{
                     num_prev = true;
                     op_prev = false;
                     result = result + ch;
                 }
-            }
+            }else if(ch=='(' || ch==')'){//num_prev, op_prev 변경하지 않음.
+                if(ch=='(') {
+                    stk.push(ch);
+                    op_prev=true;
+                }
+                else{
+                    if(op_prev) throw new Exception();
+                    if(stk.isEmpty()) throw new Exception();//(가 없는데 )가 나왔으므로
+                    else stk.pop();
+                }
+                if(num_prev) num_blank_prev = true;
+                result = result + ch;
+            }else if(ch==' '|| ch=='\t'){
+                if(num_prev) num_blank_prev = true;
+            }else if(isOperator(ch)){//()외의 연산자인 경우
+                if(op_prev){
+                    if(ch=='-') ch='~';
+                    else throw new Exception();
+                }
+                else{
+                    op_prev = true;
+                    num_prev = false;
+                    num_blank_prev = false;
+                }
+                result = result + ch;
+            }else throw new Exception();//숫자, 연산자, 공백 외 다른 문자
+
+            /*
             else if(isOperator(ch)){
                 if(op_prev){
                     if(ch=='-') ch='~'; //unary -
                     else if(ch != '(') throw new Exception(); //연산자 두번 연속 나오므로 잘못된 입력
                 }
-                if(ch=='(') stk.push(ch);
+                if(ch=='('){
+                    if(!op_prev) throw new Exception();
+                    stk.push(ch);
+                }
                 else if(ch==')'){
                     if(stk.isEmpty()) throw new Exception();//(가 없는데 )가 나왔으므로
                     else stk.pop();
+                    op_prev = false;
+                    num_prev = false;
+                    num_blank_prev = false;
                 }
                 op_prev = true;
                 if(ch==')') op_prev = false;
                 num_prev = false;
+                num_blank_prev = false;
                 result = result + ch;
-            }else if(!(ch==' ') && !(ch=='\t')) throw new Exception();//숫자, 연산자, 공백 외 다른 문자
+            }else if(ch==' '|| ch=='\t'){
+                if(num_prev) num_blank_prev = true;
+            }
+            */
+
 
         }
         if (!stk.isEmpty()) throw new Exception();//stk에 (가 남아있으면
@@ -135,10 +174,10 @@ public class CalculatorTest {
     }
 
     private static boolean isOperator( char ch){
-        return ch=='%'||ch=='('||ch==')'||ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
+        return ch=='('||ch==')'||ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
     }
 
-    private static long postfixEval(String postfix){
+    private static long postfixEval(String postfix) throws Exception{
         //교재의 PostfixEval을 참고함.
         Stack<Long> stk = new Stack<>();
         boolean num_prev = false;
@@ -165,18 +204,30 @@ public class CalculatorTest {
                 num_prev=false;
             }else num_prev=false; //ch가 공백
         }
-        return stk.pop();
+       return stk.pop();
     }
 
-    private static long operation(long a, long b, char ch){
+    private static long operation(long a, long b, char ch) throws Exception{
         long val=0;
         switch(ch){
             case '+': val = b+a; break;
             case '-': val = b-a; break;
             case '*': val = b*a; break;
-            case '/': val = b/a; break;
-            case '%': val = b%a; break;
-            case '^': val = (long)Math.pow(b,a); break;
+            case '/': {
+                val = b/a;
+                if(a==0) throw new Exception();
+                break;
+            }
+            case '%': {
+                if(a==0) throw new Exception();
+                val = b % a;
+                break;
+            }
+            case '^': {
+                if(b==0 && a<0) throw new Exception();
+                val = (long)Math.pow(b,a);
+                break;
+            }
         }
         return val;
     }
