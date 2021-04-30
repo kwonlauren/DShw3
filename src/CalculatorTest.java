@@ -1,16 +1,16 @@
-import java.io.*;
 import java.util.Stack;
+import java.io.*;
 
 public class CalculatorTest {
     public static void main(String args[]) {
+        /*
         try{
             String in = "((-2+3)*7  )+  8";
             System.out.println(isValid(in));
         } catch (Exception e){
             System.out.println("ERROR");
         }
-
-        /*
+       */
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
@@ -25,11 +25,18 @@ public class CalculatorTest {
             }
         }
 
-         */
     }
 
     private static void command(String input) throws Exception{
-
+        try{
+            input = isValid(input);
+            String postfix = infix_to_postfix(input);
+            System.out.println(postfix);
+            long result = postfixEval(postfix);
+            System.out.println(result);
+        } catch(Exception e){
+            System.out.println("ERROR");
+        }
     }
 
     private static String isValid(String infix) throws Exception{
@@ -105,7 +112,7 @@ public class CalculatorTest {
                     }
                     stk.pop(); //pop (
                 }else{
-                    while(!stk.isEmpty() && preced(stk.peek()) >= preced(ch)){
+                    while(!stk.isEmpty() && precede(stk.peek()) >= precede(ch)){
                         postfix = postfix.concat(String.valueOf(stk.pop())+" ");
                     }
                     stk.push(ch);
@@ -119,16 +126,58 @@ public class CalculatorTest {
         return postfix.strip();//마지막의 공백 하나 제거해주기
     }
 
-        private static int preced(char ch){
-            if (ch == '+' || ch == '-') return 1;
-            else if (ch == '*' || ch == '/') return 2;
-            else if (ch == '~') return 3;
-            else if (ch == '^') return 4;
-            else return 0;
-        }
+    private static int precede(char ch){
+        if (ch == '+' || ch == '-') return 1;
+        else if (ch == '*' || ch == '/'||ch=='%') return 2;
+        else if (ch == '~') return 3;
+        else if (ch == '^') return 4;
+        else return 0;
+    }
 
-        private static boolean isOperator( char ch){
-            return ch=='('||ch==')'||ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
-        }
+    private static boolean isOperator( char ch){
+        return ch=='%'||ch=='('||ch==')'||ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
+    }
 
+    private static long postfixEval(String postfix){
+        //교재의 PostfixEval을 참고함.
+        Stack<Long> stk = new Stack<>();
+        boolean num_prev = false;
+        long A, B;
+        for(int i=0; i<postfix.length(); i++){
+            char ch = postfix.charAt(i);
+            if(Character.isDigit(ch)){
+                if(num_prev){
+                    long tmp = stk.pop();
+                    tmp = 10*tmp+(ch-'0');
+                    stk.push(tmp);
+                }else stk.push((long) (ch-'0'));
+                num_prev = true;
+            }else if(isOperator(ch)){
+                if(ch=='~'){
+                    long tmp = stk.pop();
+                    stk.push(-tmp);
+                }else{
+                    A = stk.pop();
+                    B = stk.pop();
+                    long val = operation(A,B,ch);
+                    stk.push(val);
+                }
+                num_prev=false;
+            }else num_prev=false; //ch가 공백
+        }
+        return stk.pop();
+    }
+
+    private static long operation(long a, long b, char ch){
+        long val=0;
+        switch(ch){
+            case '+': val = b+a; break;
+            case '-': val = b-a; break;
+            case '*': val = b*a; break;
+            case '/': val = b/a; break;
+            case '%': val = b%a; break;
+            case '^': val = (long)Math.pow(b,a); break;
+        }
+        return val;
+    }
 }
