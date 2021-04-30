@@ -3,8 +3,13 @@ import java.util.Stack;
 
 public class CalculatorTest {
     public static void main(String args[]) {
-        String in = "~10*~5+7";
-        System.out.println(infix_to_postfix(in));
+        try{
+            String in = "((-2+3)*7  )+  8";
+            System.out.println(isValid(in));
+        } catch (Exception e){
+            System.out.println("ERROR");
+        }
+
         /*
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -23,8 +28,46 @@ public class CalculatorTest {
          */
     }
 
-    private static void command(String input) {
-    //testt
+    private static void command(String input) throws Exception{
+
+    }
+
+    private static String isValid(String infix) throws Exception{
+        //valid하지 않으면 Exception, valid하면 공백제거, ~로 바꾼 결과 리턴.
+        String result = "";
+        boolean op_prev = true;
+        boolean num_prev = false;
+        Stack<Character> stk = new Stack<Character>();
+        for(int i=0; i<infix.length(); i++){
+            char ch = infix.charAt(i);
+            if(Character.isDigit(ch)) {
+                if(num_prev) throw new Exception();
+                else{
+                    num_prev = true;
+                    op_prev = false;
+                    result = result + ch;
+                }
+            }
+            else if(isOperator(ch)){
+                if(op_prev){
+                    if(ch=='-') ch='~'; //unary -
+                    else if(ch != '(') throw new Exception(); //연산자 두번 연속 나오므로 잘못된 입력
+                }
+                if(ch=='(') stk.push(ch);
+                else if(ch==')'){
+                    if(stk.isEmpty()) throw new Exception();//(가 없는데 )가 나왔으므로
+                    else stk.pop();
+                }
+                op_prev = true;
+                if(ch==')') op_prev = false;
+                num_prev = false;
+                result = result + ch;
+            }else if(!(ch==' ') && !(ch=='\t')) throw new Exception();//숫자, 연산자, 공백 외 다른 문자
+
+        }
+        if (!stk.isEmpty()) throw new Exception();//stk에 (가 남아있으면
+
+        return result;
     }
 
     private static String infix_to_postfix(String infix) {
@@ -51,18 +94,17 @@ public class CalculatorTest {
                     postfix = postfix.concat(Long.toString(num) + ' ');
                     num = 0;
                 }
-            }else if (ch == '(') {
-                stk.push(ch);
-            }else if (ch == ')') {
-                while (stk.peek() != '(') {
-                    postfix = postfix.concat(String.valueOf(stk.pop())+" ");
-                }
-                stk.pop(); //pop (
             }else if (isOperator(ch)) {
                 if(ch=='^' || ch == '~') {
                     stk.push(ch);
-                }
-                else{
+                }else if (ch == '(') {
+                    stk.push(ch);
+                }else if (ch == ')') {
+                    while (stk.peek() != '(') {
+                        postfix = postfix.concat(String.valueOf(stk.pop()) + " ");
+                    }
+                    stk.pop(); //pop (
+                }else{
                     while(!stk.isEmpty() && preced(stk.peek()) >= preced(ch)){
                         postfix = postfix.concat(String.valueOf(stk.pop())+" ");
                     }
@@ -86,7 +128,7 @@ public class CalculatorTest {
         }
 
         private static boolean isOperator( char ch){
-            return ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
+            return ch=='('||ch==')'||ch == '~' || ch == '^' || ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '%';
         }
 
 }
